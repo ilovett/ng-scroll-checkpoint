@@ -1,0 +1,24 @@
+{
+  "name": "ng-scroll-checkpoint",
+  "version": "0.0.1",
+  "main": "./ng-scroll-checkpoint.js",
+  "homepage": "https://github.com/ilovett/ng-scroll-checkpoint",
+  "authors": [
+    "Ian Lovett <i.c.lovett@gmail.com>"
+  ],
+  "description": "Provides hook for when elements become in or out of view.",
+  "keywords": [
+    "angular",
+    "scroll",
+    "checkpoint",
+    "threshold"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
