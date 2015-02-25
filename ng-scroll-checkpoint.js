@@ -3,52 +3,54 @@
   'use strict';
 
   angular.module('ngScrollCheckpoint', [])
-    .directive('ngScrollCheckpoint', function ($window, $parse) {
+    .directive('ngScrollCheckpoint', function ($window, $parse, $timeout) {
       return {
         restrict: 'A',
         link: function postLink(scope, element, attrs) {
 
-          var options, $w, inView;
+          var options, $w, show;
 
+          // default options
           options = scope.$eval(attrs.ngScrollCheckpointOptions) || {};
-          options.top = options.top || 100;
-          options.bottom = options.bottom || 100;
+          options.threshold = options.threshold || 0;
+          options.once = typeof options.once === 'boolean' ? options.once : true;
 
           $w = angular.element($window);
 
-          function inViewCheck($event, b, c) {
+          // start hidden
+          show = false;
 
-            var checkpoints, el, newInView;
+          function showCheck($event) {
 
-            checkpoints = {};
-            checkpoints.top = $w.scrollTop() + options.bottom;
-            checkpoints.bottom = $w.scrollTop() + $w.height() - options.top;
+            var threshold, pos, showTemp;
 
-            el = {};
-            el.top = element.offset().top;
-            el.bottom = element.offset().top + element.height();
+            // calculate if threshold has been crossed
+            threshold = $w.scrollTop() + $w.height() - options.threshold;
+            pos = element.offset().top;
+            showTemp = (threshold > pos);
 
-            // determine if element is in view
-            newInView = (el.top < checkpoints.bottom && el.bottom > checkpoints.top);
+            // evaluate expression if visible has changed
+            if (showTemp !== show) {
 
-            // if inView has changed fire the listener expression
-            if (newInView !== inView) {
-              $parse(attrs.ngScrollCheckpoint)(scope, {
-                inView: newInView
-              });
+              // save new show state
+              show = showTemp;
+
+              // evaluate expression and pass variables
+              $parse(attrs.ngScrollCheckpoint)(scope, { show: show });
+
+              // disable the listener if visible
+              if (show === true && options.once) {
+                $w.off('scroll', showCheck);
+              }
             }
 
-            // save new inView state
-            inView = newInView;
-
-            // apply if digest not in progress
-            !scope.$$phase && scope.$apply();
+            scope.$apply();
 
           }
 
           // add listener on scrolling and fire listener immediately
-          $w.on('scroll', inViewCheck);
-          inViewCheck();
+          $w.on('scroll', showCheck);
+          $timeout(showCheck, 500);
 
         }
       };
